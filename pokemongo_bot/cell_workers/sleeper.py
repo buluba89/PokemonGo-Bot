@@ -6,6 +6,28 @@ from pokemongo_bot.cell_workers.base_task import BaseTask
 
 
 class Sleeper(BaseTask):
+    """Pauses the execution of the bot every day for some time
+
+    Simulates the user going to sleep every day for some time, the sleep time
+    and the duration is changed every day by a random offset defined in the
+    config file
+    Example Config:
+    {
+        "type": "Sleeper",
+        "config": {
+          "time": "12:00",
+          "duration":"5:30",
+          "time_random_offset": "00:30",
+          "duration_random_offset": "00:30"
+        }
+    }
+    time: (HH:MM) local time that the bot should sleep
+    duration: (HH:MM) the duration of sleep
+    time_random_offset: (HH:MM) random offset of time that the sleep will start
+                        for this example the possible start time is 11:30-12:30
+    duration_random_offset: (HH:MM) random offset of duration of sleep
+                        for this example the possible duration is 5:00-6:00
+    """
 
     LOG_INTERVAL_SECONDS = 600
     SCHEDULING_MARGIN = timedelta(minutes=10)    # Skip if next sleep is RESCHEDULING_MARGIN from now
@@ -41,15 +63,7 @@ class Sleeper(BaseTask):
     def _schedule_next_sleep(self):
         self._next_sleep = self._get_next_sleep_schedule()
         self._next_duration = self._get_next_duration()
-        '''
-        self.bot.event_manager('sleeper_scheduled',
-                               sender=self,
-                               level='info',
-                               formated='Next sleep at: {datetime}',
-                               data={'datetime': self._next_sleep}
-                               )
-        '''
-        logger.log('Sleeper next {}'.format(str(self._next_sleep)))
+        logger.log('Sleeper: next sleep at {}'.format(str(self._next_sleep)), color='green')
 
     def _get_next_sleep_schedule(self):
         now = datetime.now() + self.SCHEDULING_MARGIN
@@ -73,8 +87,9 @@ class Sleeper(BaseTask):
 
     def _sleep(self):
         sleep_to_go = self._next_duration
+        logger.log('It\'s time for sleep.')
         while sleep_to_go > 0:
-            logger.log('It\'s time for sleep. Sleeping for {} seconds'.format(sleep_to_go))
+            logger.log('Sleeping for {} more seconds'.format(sleep_to_go), 'yellow')
             if sleep_to_go < self.LOG_INTERVAL_SECONDS:
                 sleep(sleep_to_go)
                 sleep_to_go = 0
