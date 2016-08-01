@@ -6,12 +6,7 @@ from tests import FakeBot
 
 
 class SleeperTestCase(unittest.TestCase):
-    config = {
-        'time': '12:20',
-        'duration': '01:05',
-        'time_random_offset': '00:05',
-        'duration_random_offset': '00:05'
-    }
+    config = {'time': '12:20', 'duration': '01:05', 'time_random_offset': '00:05', 'duration_random_offset': '00:05'}
 
     def setUp(self):
         self.bot = FakeBot()
@@ -20,35 +15,26 @@ class SleeperTestCase(unittest.TestCase):
     def test_config(self):
         self.assertEqual(self.worker.time.hour, 12)
         self.assertEqual(self.worker.time.minute, 20)
-        self.assertEqual(
-            self.worker.duration,
-            timedelta(
-                hours=1, minutes=5).total_seconds())
-        self.assertEqual(
-            self.worker.time_random_offset,
-            timedelta(minutes=5).total_seconds())
-        self.assertEqual(
-            self.worker.duration_random_offset,
-            timedelta(minutes=5).total_seconds())
+        self.assertEqual(self.worker.duration, timedelta(hours=1, minutes=5).total_seconds())
+        self.assertEqual(self.worker.time_random_offset, timedelta(minutes=5).total_seconds())
+        self.assertEqual(self.worker.duration_random_offset, timedelta(minutes=5).total_seconds())
 
     @patch('pokemongo_bot.cell_workers.sleeper.datetime')
     def test_get_next_time(self, mock_datetime):
-        mock_datetime.now.return_value = datetime(
-            year=2016, month=8, day=01, hour=8, minute=0)
+        mock_datetime.now.return_value = datetime(year=2016, month=8, day=01, hour=8, minute=0)
 
-        next = self.worker._get_next_schedule()
+        next_time = self.worker._get_next_sleep_schedule()
         from_date = datetime(year=2016, month=8, day=1, hour=12, minute=15)
         to_date = datetime(year=2016, month=8, day=1, hour=12, minute=25)
 
-        self.assertGreaterEqual(next, from_date)
-        self.assertLessEqual(next, to_date)
+        self.assertGreaterEqual(next_time, from_date)
+        self.assertLessEqual(next_time, to_date)
 
     @patch('pokemongo_bot.cell_workers.sleeper.datetime')
     def test_get_next_time_called_near_activation_time(self, mock_datetime):
-        mock_datetime.now.return_value = datetime(
-            year=2016, month=8, day=1, hour=12, minute=25)
+        mock_datetime.now.return_value = datetime(year=2016, month=8, day=1, hour=12, minute=25)
 
-        next = self.worker._get_next_schedule()
+        next = self.worker._get_next_sleep_schedule()
         from_date = datetime(year=2016, month=8, day=02, hour=12, minute=15)
         to_date = datetime(year=2016, month=8, day=02, hour=12, minute=25)
 
@@ -56,12 +42,10 @@ class SleeperTestCase(unittest.TestCase):
         self.assertLessEqual(next, to_date)
 
     @patch('pokemongo_bot.cell_workers.sleeper.datetime')
-    def test_get_next_time_called_when_this_days_time_passed(self,
-                                                             mock_datetime):
-        mock_datetime.now.return_value = datetime(
-            year=2016, month=8, day=1, hour=14, minute=0)
+    def test_get_next_time_called_when_this_days_time_passed(self, mock_datetime):
+        mock_datetime.now.return_value = datetime(year=2016, month=8, day=1, hour=14, minute=0)
 
-        next = self.worker._get_next_schedule()
+        next = self.worker._get_next_sleep_schedule()
         from_date = datetime(year=2016, month=8, day=02, hour=12, minute=15)
         to_date = datetime(year=2016, month=8, day=02, hour=12, minute=25)
 
